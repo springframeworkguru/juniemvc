@@ -1,21 +1,20 @@
 package guru.springframework.juniemvc.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import guru.springframework.juniemvc.models.BeerOrderShipmentDto;
 import guru.springframework.juniemvc.services.BeerOrderService;
 import guru.springframework.juniemvc.services.BeerOrderShipmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -39,10 +38,10 @@ class BeerOrderShipmentControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     BeerOrderShipmentService beerOrderShipmentService;
 
-    @MockBean
+    @MockitoBean
     BeerOrderService beerOrderService;
 
     BeerOrderShipmentDto testShipment;
