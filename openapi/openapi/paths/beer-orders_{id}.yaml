@@ -1,0 +1,125 @@
+parameters:
+  - name: id
+    in: path
+    description: "ID of the beer order"
+    required: true
+    schema:
+      type: integer
+      format: int32
+get:
+  tags:
+    - BeerOrder
+  summary: Get a beer order by ID
+  description: "Returns a beer order by its ID."
+  operationId: getBeerOrderById
+  security:
+    - api_key: []
+  responses:
+    '200':
+      description: "Successfully retrieved the beer order"
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/BeerOrderDto.yaml'
+          example:
+            id: 1
+            version: 0
+            createdDate: "2023-01-01T12:00:00Z"
+            updateDate: "2023-01-01T12:00:00Z"
+            customerRef: "CUST-123"
+            paymentAmount: 129.99
+            status: "COMPLETE"
+            beerOrderLines:
+              - id: 1
+                version: 0
+                createdDate: "2023-01-01T12:00:00Z"
+                updateDate: "2023-01-01T12:00:00Z"
+                beerId: 1
+                beerName: "Mango Bobs"
+                beerStyle: "IPA"
+                upc: "0631234200036"
+                orderQuantity: 10
+                quantityAllocated: 10
+                status: "ALLOCATED"
+    '404':
+      description: "Beer order not found"
+    '401':
+      description: "Unauthorized"
+put:
+  tags:
+    - BeerOrder
+  summary: Update a beer order
+  description: "Updates an existing beer order. The ID in the path must match the ID in the request body."
+  operationId: updateBeerOrder
+  security:
+    - api_key: []
+  requestBody:
+    description: "Beer order object with updated information"
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../components/schemas/BeerOrderDto.yaml'
+        example:
+          id: 1
+          version: 0
+          customerRef: "CUST-123-UPDATED"
+          paymentAmount: 129.99
+          status: "PAID"
+          beerOrderLines:
+            - id: 1
+              beerId: 1
+              beerName: "Mango Bobs"
+              beerStyle: "IPA"
+              upc: "0631234200036"
+              orderQuantity: 10
+              quantityAllocated: 10
+              status: "ALLOCATED"
+  responses:
+    '200':
+      description: "Successfully updated the beer order"
+      content:
+        application/json:
+          schema:
+            $ref: '../components/schemas/BeerOrderDto.yaml'
+          example:
+            id: 1
+            version: 1
+            createdDate: "2023-01-01T12:00:00Z"
+            updateDate: "2023-01-03T15:30:00Z"
+            customerRef: "CUST-123-UPDATED"
+            paymentAmount: 129.99
+            status: "PAID"
+            beerOrderLines:
+              - id: 1
+                version: 1
+                createdDate: "2023-01-01T12:00:00Z"
+                updateDate: "2023-01-03T15:30:00Z"
+                beerId: 1
+                beerName: "Mango Bobs"
+                beerStyle: "IPA"
+                upc: "0631234200036"
+                orderQuantity: 10
+                quantityAllocated: 10
+                status: "ALLOCATED"
+    '400':
+      description: "Bad request - validation error"
+    '404':
+      description: "Beer order not found"
+    '401':
+      description: "Unauthorized"
+delete:
+  tags:
+    - BeerOrder
+  summary: Delete a beer order
+  description: "Deletes a beer order by its ID."
+  operationId: deleteBeerOrder
+  security:
+    - api_key: []
+  responses:
+    '204':
+      description: "Successfully deleted the beer order"
+    '404':
+      description: "Beer order not found"
+    '401':
+      description: "Unauthorized"
