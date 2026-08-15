@@ -65,10 +65,6 @@ paths:
     $ref: 'paths/beers.yaml'
   '/api/v1/beers/{id}':
     $ref: 'paths/beers_{id}.yaml'
-  '/api/v1/beer-orders':
-    $ref: 'paths/beer-orders.yaml'
-  '/api/v1/beer-orders/{id}':
-    $ref: 'paths/beer-orders_{id}.yaml'
 components:
   securitySchemes:
     main_auth:
