@@ -43,6 +43,9 @@ export interface BeerOrderDto {
   version?: number;
   createdDate?: string;
   updateDate?: string;
+  /** Nested customer returned/required by the API */
+  customer?: import('./customer').CustomerDto;
+  /** Legacy/UI helper field (not always present on API responses) */
   customerRef?: string;
   paymentAmount: number;
   status?: string;

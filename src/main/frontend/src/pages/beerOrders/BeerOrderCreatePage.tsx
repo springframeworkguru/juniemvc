@@ -13,6 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@components/ui';
+import customerService from '../../services/customerService';
+import beerService from '../../services/beerService';
+import beerOrderService from '../../services/beerOrderService';
+import type { BeerOrderDto, BeerOrderLineDto } from '../../types/beerOrder';
 
 // Local interfaces for form data
 interface CustomerOption {
@@ -53,31 +57,60 @@ const BeerOrderCreatePage: React.FC = () => {
     { id: 1, beerId: '', beerName: '', quantity: 1, price: 0 },
   ]);
 
-  // Simulate fetching customers and beers data
+  // Load customers and beers from the API (persisted data)
   useEffect(() => {
-    // In a real application, you would fetch the customers and beers data from the API
-    // For now, we'll use mock data
-    const mockCustomers = [
-      { id: 1, name: 'John Doe', email: 'john.doe@example.com' },
-      { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com' },
-      { id: 3, name: 'Bob Johnson', email: 'bob.johnson@example.com' },
-    ];
+    let cancelled = false;
 
-    const mockBeers = [
-      { id: 1, name: 'Mango Bobs', style: 'IPA', price: 12.99, quantityOnHand: 100 },
-      { id: 2, name: 'Galaxy Cat', style: 'PALE_ALE', price: 11.99, quantityOnHand: 75 },
-      { id: 3, name: 'Pinball Porter', style: 'PORTER', price: 13.99, quantityOnHand: 50 },
-      { id: 4, name: 'Pumpkin Ale', style: 'ALE', price: 10.99, quantityOnHand: 120 },
-    ];
+    const loadOptions = async () => {
+      try {
+        const [customerList, beerPage] = await Promise.all([
+          customerService.getCustomers(),
+          beerService.getBeers({ page: 0, size: 1000 }),
+        ]);
 
-    // Simulate API call delay
-    const timer = setTimeout(() => {
-      setCustomers(mockCustomers);
-      setBeers(mockBeers);
-      setLoading(false);
-    }, 500);
+        if (cancelled) {
+          return;
+        }
 
-    return () => clearTimeout(timer);
+        setCustomers(
+          customerList
+            .filter(c => c.id != null)
+            .map(c => ({
+              id: c.id as number,
+              name: c.name,
+              email: c.email || '',
+            }))
+        );
+
+        setBeers(
+          (beerPage.content || [])
+            .filter(b => b.id != null)
+            .map(b => ({
+              id: b.id as number,
+              name: b.beerName,
+              style: b.beerStyle,
+              price: typeof b.price === 'number' ? b.price : Number(b.price),
+              quantityOnHand: b.quantityOnHand ?? 0,
+            }))
+        );
+      } catch (error) {
+        console.error('Failed to load customers/beers for order form', error);
+        if (!cancelled) {
+          setCustomers([]);
+          setBeers([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadOptions();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleCustomerChange = (customerId: string) => {
@@ -136,7 +169,7 @@ const BeerOrderCreatePage: React.FC = () => {
     }, 0);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!selectedCustomerId || lineItems.some(item => !item.beerId)) {
@@ -144,14 +177,52 @@ const BeerOrderCreatePage: React.FC = () => {
       return;
     }
 
+    const selectedCustomer = customers.find(c => c.id.toString() === selectedCustomerId);
+    if (!selectedCustomer) {
+      alert('Please select a valid customer');
+      return;
+    }
+
     setSubmitting(true);
 
-    // In a real application, you would submit the order data to the API
-    // For now, we'll just simulate a successful submission
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      const beerOrderLines: BeerOrderLineDto[] = lineItems.map(item => {
+        const beer = beers.find(b => b.id.toString() === item.beerId.toString());
+        return {
+          beerId: Number(item.beerId),
+          beerName: beer?.name || item.beerName || '',
+          beerStyle: beer?.style || '',
+          upc: '',
+          orderQuantity: item.quantity,
+          quantityAllocated: 0,
+          status: 'NEW',
+        };
+      });
+
+      const payload: BeerOrderDto = {
+        customer: {
+          id: selectedCustomer.id,
+          name: selectedCustomer.name,
+          email: selectedCustomer.email,
+          addressLine1: '',
+          city: '',
+          state: '',
+          postalCode: '',
+        },
+        customerRef,
+        paymentAmount: calculateTotal(),
+        status: 'NEW',
+        beerOrderLines,
+      };
+
+      await beerOrderService.createBeerOrder(payload);
       navigate('/beer-orders');
-    }, 1000);
+    } catch (error) {
+      console.error('Failed to create beer order', error);
+      alert('Failed to create beer order. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleCancel = () => {

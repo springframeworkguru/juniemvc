@@ -11,6 +11,7 @@ import guru.springframework.juniemvc.models.BeerOrderLineDto;
 import guru.springframework.juniemvc.models.CustomerDto;
 import guru.springframework.juniemvc.repositories.BeerOrderRepository;
 import guru.springframework.juniemvc.repositories.BeerRepository;
+import guru.springframework.juniemvc.repositories.CustomerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +41,9 @@ class BeerOrderServiceImplTest {
 
     @Mock
     BeerRepository beerRepository;
+
+    @Mock
+    CustomerRepository customerRepository;
 
     @Mock
     BeerOrderMapper beerOrderMapper;
@@ -187,6 +191,7 @@ class BeerOrderServiceImplTest {
     void saveBeerOrder() {
         // Given
         when(beerOrderMapper.beerOrderDtoToBeerOrder(testBeerOrderDto)).thenReturn(testBeerOrder);
+        when(customerRepository.findById(1)).thenReturn(Optional.of(testCustomer));
         when(beerOrderLineMapper.beerOrderLineDtoToBeerOrderLine(any(BeerOrderLineDto.class))).thenReturn(testBeerOrderLine);
         when(beerRepository.findById(1)).thenReturn(Optional.of(testBeer));
         when(beerOrderRepository.save(any(BeerOrder.class))).thenReturn(testBeerOrder);
@@ -200,6 +205,7 @@ class BeerOrderServiceImplTest {
         assertThat(savedBeerOrderDto.getCustomer()).isNotNull();
         assertThat(savedBeerOrderDto.getCustomer().getName()).isEqualTo("Test Customer");
         verify(beerOrderMapper, times(1)).beerOrderDtoToBeerOrder(any(BeerOrderDto.class));
+        verify(customerRepository, times(1)).findById(1);
         verify(beerOrderRepository, times(1)).save(any(BeerOrder.class));
         verify(beerOrderMapper, times(1)).beerOrderToBeerOrderDto(any(BeerOrder.class));
     }

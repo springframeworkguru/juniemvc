@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@components/ui';
 import { Menu, X, Home, Beer, Users, ShoppingCart } from 'lucide-react';
+import ToastContainer from '../components/dialogs/ToastContainer';
 
 /**
  * Root layout component that wraps all pages
@@ -120,6 +121,7 @@ const RootLayout: React.FC = () => {
           </div>
         </footer>
       </div>
+      <ToastContainer />
     </div>
   );
 };

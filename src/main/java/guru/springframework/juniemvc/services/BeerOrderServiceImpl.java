@@ -3,15 +3,18 @@ package guru.springframework.juniemvc.services;
 import guru.springframework.juniemvc.entities.Beer;
 import guru.springframework.juniemvc.entities.BeerOrder;
 import guru.springframework.juniemvc.entities.BeerOrderLine;
+import guru.springframework.juniemvc.entities.Customer;
+import guru.springframework.juniemvc.exceptions.NotFoundException;
 import guru.springframework.juniemvc.mappers.BeerOrderLineMapper;
 import guru.springframework.juniemvc.mappers.BeerOrderMapper;
 import guru.springframework.juniemvc.models.BeerOrderDto;
-import guru.springframework.juniemvc.models.BeerOrderLineDto;
 import guru.springframework.juniemvc.repositories.BeerOrderRepository;
 import guru.springframework.juniemvc.repositories.BeerRepository;
+import guru.springframework.juniemvc.repositories.CustomerRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,15 +27,18 @@ public class BeerOrderServiceImpl implements BeerOrderService {
 
     private final BeerOrderRepository beerOrderRepository;
     private final BeerRepository beerRepository;
+    private final CustomerRepository customerRepository;
     private final BeerOrderMapper beerOrderMapper;
     private final BeerOrderLineMapper beerOrderLineMapper;
 
     public BeerOrderServiceImpl(BeerOrderRepository beerOrderRepository,
                                BeerRepository beerRepository,
+                               CustomerRepository customerRepository,
                                BeerOrderMapper beerOrderMapper,
                                BeerOrderLineMapper beerOrderLineMapper) {
         this.beerOrderRepository = beerOrderRepository;
         this.beerRepository = beerRepository;
+        this.customerRepository = customerRepository;
         this.beerOrderMapper = beerOrderMapper;
         this.beerOrderLineMapper = beerOrderLineMapper;
     }
@@ -56,24 +62,34 @@ public class BeerOrderServiceImpl implements BeerOrderService {
     @Transactional
     public BeerOrderDto saveBeerOrder(BeerOrderDto beerOrderDto) {
         BeerOrder beerOrder = beerOrderMapper.beerOrderDtoToBeerOrder(beerOrderDto);
-        
-        // Process beer order lines
+
+        // Attach a managed Customer reference (avoid detached/transient customer on save)
+        if (beerOrderDto.getCustomer() == null || beerOrderDto.getCustomer().getId() == null) {
+            throw new NotFoundException("Customer is required");
+        }
+        Customer customer = customerRepository.findById(beerOrderDto.getCustomer().getId())
+                .orElseThrow(() -> new NotFoundException("Customer not found with id: "
+                        + beerOrderDto.getCustomer().getId()));
+        beerOrder.setCustomer(customer);
+
+        // Replace lines so updates do not keep stale collections from the mapper
+        beerOrder.setBeerOrderLines(new HashSet<>());
+
         if (beerOrderDto.getBeerOrderLines() != null) {
             beerOrderDto.getBeerOrderLines().forEach(lineDto -> {
-                // Create a new beer order line
                 BeerOrderLine line = beerOrderLineMapper.beerOrderLineDtoToBeerOrderLine(lineDto);
-                
-                // Find and set the beer reference
+
                 if (lineDto.getBeerId() != null) {
-                    Optional<Beer> beerOptional = beerRepository.findById(lineDto.getBeerId());
-                    beerOptional.ifPresent(line::setBeer);
+                    Beer beer = beerRepository.findById(lineDto.getBeerId())
+                            .orElseThrow(() -> new NotFoundException("Beer not found with id: "
+                                    + lineDto.getBeerId()));
+                    line.setBeer(beer);
                 }
-                
-                // Add the line to the order
+
                 beerOrder.addBeerOrderLine(line);
             });
         }
-        
+
         BeerOrder savedBeerOrder = beerOrderRepository.save(beerOrder);
         return beerOrderMapper.beerOrderToBeerOrderDto(savedBeerOrder);
     }

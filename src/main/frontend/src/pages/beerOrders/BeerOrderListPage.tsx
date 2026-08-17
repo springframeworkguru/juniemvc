@@ -106,18 +106,22 @@ const BeerOrderListPage: React.FC = () => {
       ),
     },
     {
-      key: 'customerRef',
+      key: 'customer',
       header: 'Customer',
       sortable: true,
-      render: (value, order) => (
-        <div>
-          <div className="font-medium">{order.customerRef || 'Unknown'}</div>
-          <div className="text-sm text-gray-500">{String(value)}</div>
-        </div>
-      ),
+      render: (_value, order) => {
+        const name = order.customer?.name || order.customerRef || 'Unknown';
+        const email = order.customer?.email || '';
+        return (
+          <div>
+            <div className="font-medium">{name}</div>
+            {email ? <div className="text-sm text-gray-500">{email}</div> : null}
+          </div>
+        );
+      },
     },
     {
-      key: 'orderStatus',
+      key: 'status',
       header: 'Status',
       sortable: true,
       render: value => {
@@ -136,7 +140,7 @@ const BeerOrderListPage: React.FC = () => {
 
         return (
           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${colorClass}`}>
-            {String(value)}
+            {value ? String(value) : '-'}
           </span>
         );
       },

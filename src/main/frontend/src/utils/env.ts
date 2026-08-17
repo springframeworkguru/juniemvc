@@ -52,7 +52,13 @@ export const getAppVersion = (): string => {
  * Get the API base URL
  */
 export const getApiBaseUrl = (): string => {
-  return import.meta.env.VITE_API_BASE_URL || '/api';
+  // Service paths already include `/api/v1/...`. Base must not also be `/api`
+  // or requests become `/api/api/v1/...`.
+  const base = import.meta.env.VITE_API_BASE_URL;
+  if (base === undefined || base === null || base === '') {
+    return '';
+  }
+  return base;
 };
 
 /**

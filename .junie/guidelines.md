@@ -285,9 +285,9 @@ logger.atDebug()
 
 ```xml
 <properties>
-    <node.version>v22.16.0</node.version>
-    <npm.version>11.4.0</npm.version>
-    <frontend-maven-plugin.version>1.13.4</frontend-maven-plugin.version>
+    <node.version>v25.4.0</node.version>
+    <npm.version>11.7.0</npm.version>
+    <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
 </properties>
 
 <plugin>

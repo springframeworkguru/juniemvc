@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { RootLayout } from './layouts';
 import { AuthProvider } from './contexts/AuthContext';
-import './App.css';
+import { ToastProvider } from './contexts/ToastContext';
 
 // Lazy load page components for code splitting
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -188,7 +188,9 @@ const App: React.FC = () => {
 
   return (
     <AuthProvider>
-      <RouterProvider router={router} />
+      <ToastProvider>
+        <RouterProvider router={router} />
+      </ToastProvider>
     </AuthProvider>
   );
 };

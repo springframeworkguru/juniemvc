@@ -1,10 +1,16 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [tailwindcss(), react()],
+  // preview uses build.outDir (src/main/resources/static) — not the default dist/
+  preview: {
+    port: 4173,
+    strictPort: false,
+  },
   server: {
     port: 3000,
     proxy: {
@@ -34,7 +40,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: '../../../target/classes/static',
+    outDir: path.resolve(__dirname, '../resources/static'),
     emptyOutDir: true,
     sourcemap: process.env.NODE_ENV !== 'production',
     minify: 'terser',
