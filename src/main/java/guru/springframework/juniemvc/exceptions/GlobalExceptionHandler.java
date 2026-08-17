@@ -103,7 +103,7 @@ public class GlobalExceptionHandler {
                 .type(URI.create(PROBLEM_BASE_URL + "/internal-error"))
                 .title("Internal Server Error")
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .detail("An unexpected error occurred")
+                .detail(ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred")
                 .instance(URI.create(request.getContextPath()))
                 .build();
 

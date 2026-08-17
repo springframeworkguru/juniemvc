@@ -29,6 +29,10 @@ export type BeerOrderDto = {
      */
     customerRef?: string;
     /**
+     * Customer associated with the order (required by API).
+     */
+    customer?: import('./CustomerDto').CustomerDto;
+    /**
      * Payment amount for the order.
      */
     paymentAmount: number;
